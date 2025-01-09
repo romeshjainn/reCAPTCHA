@@ -45,7 +45,9 @@ function App() {
       alert("Please complete the CAPTCHA.");
       return;
     }
+  };
 
+  const verifyRecaptch = async () => {
     // Send CAPTCHA token to the server for verification
     try {
       const response = await fetch("http://localhost:5000/api/verify-captcha", {
@@ -65,6 +67,10 @@ function App() {
       console.error("Error verifying CAPTCHA:", error);
     }
   };
+
+  useEffect(() => {
+    captchaToken.length && verifyRecaptch();
+  }, [captchaToken]);
 
   return (
     <>
