@@ -4,14 +4,40 @@ function App() {
   const siteKey = import.meta.env.VITE_SITE_KEY; // Fetch the site key from .env
   const [captchaToken, setCaptchaToken] = useState("");
 
-  // Callback function to handle the CAPTCHA token
+  // Wait for the reCAPTCHA API to load and then initialize it
   useEffect(() => {
-    // Assign the function to the global scope
-    window.handleCaptcha = (token) => {
-      setCaptchaToken(token);
-      console.log("Generated Token: ", token);
+    const loadRecaptcha = () => {
+      // Check if reCAPTCHA is already loaded
+      if (window.grecaptcha) {
+        window.grecaptcha.ready(() => {
+          // Create the reCAPTCHA widget after the API is ready
+          window.grecaptcha.render("recaptcha-container", {
+            sitekey: siteKey,
+            callback: handleCaptcha,
+          });
+        });
+      }
     };
-  }, []);
+
+    // Dynamically load the reCAPTCHA script
+    const script = document.createElement("script");
+    script.src = "https://www.google.com/recaptcha/api.js";
+    script.async = true;
+    script.defer = true;
+    script.onload = loadRecaptcha;
+    document.head.appendChild(script);
+
+    // Clean up the script when component is unmounted
+    return () => {
+      script.remove();
+    };
+  }, [siteKey]);
+
+  // Callback function to handle the CAPTCHA token
+  const handleCaptcha = (token) => {
+    setCaptchaToken(token);
+    console.log("Generated Token: ", token);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -42,17 +68,9 @@ function App() {
 
   return (
     <>
-      <script
-        src="https://www.google.com/recaptcha/api.js"
-        async
-        defer
-      ></script>
       <form onSubmit={handleSubmit}>
-        <div
-          className="g-recaptcha"
-          data-sitekey={siteKey}
-          data-callback="handleCaptcha" // Reference to the global function
-        ></div>
+        <div id="recaptcha-container"></div>{" "}
+        {/* The reCAPTCHA will be rendered here */}
         <br />
         <button type="submit">Submit</button>
       </form>
