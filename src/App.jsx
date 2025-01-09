@@ -48,7 +48,7 @@ function App() {
 
     // Send CAPTCHA token to the server for verification
     try {
-      const response = await fetch("http://localhost:5000/verify-captcha", {
+      const response = await fetch("http://localhost:5000/api/verify-captcha", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
